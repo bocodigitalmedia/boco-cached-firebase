@@ -1,0 +1,11 @@
+{
+  "name": "boco-json-storage",
+  "version": "0.0.1",
+  "description": "JSON Storage, References, writable using pointers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christian Bradley <christianbradley@gmail.com> (https://github.com/christianbradley)",
+  "license": "MIT"
+}
