@@ -2,6 +2,12 @@
 
 Fully-offline cached objects that sync to firebase references.
 
+## Installation
+
+```
+npm install boco-cached-firebase
+```
+
 ## Usage
 
 ```coffee
