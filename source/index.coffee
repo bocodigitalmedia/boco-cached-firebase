@@ -177,9 +177,21 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
       @watch callback
 
     $loaded: ->
+
       promiseFn = (resolve, reject) =>
-        @load (error, data) ->
-          if error? then reject(error) else resolve(data)
+        noop = -> # noop
+
+        onError = (error) ->
+          resolve = noop
+          reject error
+
+        onData = (data) =>
+          @removeListener 'error', onError
+          reject = noop
+          resolve data
+
+        @once 'error', onError
+        @load onData
 
       new Promise promiseFn
 
