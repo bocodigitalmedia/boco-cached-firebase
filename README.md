@@ -13,7 +13,6 @@ npm install boco-cached-firebase
 ```coffee
 # Requires
 Firebase = require 'firebase'
-LocalStorage = require 'node-localstorage'
 CachedFirebase = require 'boco-cached-firebase'
 
 # Initialize your firebase application
@@ -28,9 +27,10 @@ LocalStorage = require 'node-localstorage'
 cache = new CachedFirebase.DomCache
   localStorage: new LocalStorage('./storage')
   localStorageKey: 'cached-firebase'
+  # - for browsers just use localstorage: window.localStorage
 
 # Create an object factory
-objectFactory = new CachedFirebase.ObjectFactory
+objectFactory = new CachedFirebase.CachedObjectFactory
   cache: cache
   firebaseDb: Firebase.database()
 
@@ -55,5 +55,5 @@ myObject.on 'cancel', (cancelError) ->
 
 # When finished with this object you may call unwatch
 # to remove all 'change' event listeners
-myObject.unwatch
+myObject.unwatch()
 ```

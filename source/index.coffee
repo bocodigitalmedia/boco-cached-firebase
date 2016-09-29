@@ -1,7 +1,8 @@
-configure = ({JsonPointer, EventEmitter} = {}) ->
+configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
 
   if typeof require is 'function'
     JsonPointer ?= require 'json-ptr'
+    Promise ?= require 'bluebird'
     EventEmitter ?= require('events').EventEmitter
 
   pathToPointer = (path) ->
@@ -171,6 +172,16 @@ configure = ({JsonPointer, EventEmitter} = {}) ->
     unwatch: (callback) ->
       @off 'value', callback
       @removeFirebaseValueListener() if @listenerCount('value') is 0
+
+    $watch: (callback) ->
+      @watch callback
+
+    $loaded: ->
+      promiseFn = (resolve, reject) =>
+        @load (error, data) ->
+          if error? then reject(error) else resolve(data)
+
+      new Promise promiseFn
 
     load: (callback) ->
       isLoaded = false
