@@ -356,13 +356,19 @@ configure = function(arg) {
       var promiseFn;
       promiseFn = (function(_this) {
         return function(resolve, reject) {
-          return _this.load(function(error, data) {
-            if (error != null) {
-              return reject(error);
-            } else {
-              return resolve(data);
-            }
-          });
+          var noop, onData, onError;
+          noop = function() {};
+          onError = function(error) {
+            resolve = noop;
+            return reject(error);
+          };
+          onData = function(data) {
+            _this.removeListener('error', onError);
+            reject = noop;
+            return resolve(data);
+          };
+          _this.once('error', onError);
+          return _this.load(onData);
         };
       })(this);
       return new Promise(promiseFn);
