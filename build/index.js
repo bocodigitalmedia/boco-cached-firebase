@@ -5,11 +5,14 @@ var configure,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 configure = function(arg) {
-  var Cache, CacheReference, CachedObject, CachedObjectFactory, DomCache, EventEmitter, EventEmitterProxy, JsonPointer, MemoryCache, pathToPointer, ref;
-  ref = arg != null ? arg : {}, JsonPointer = ref.JsonPointer, EventEmitter = ref.EventEmitter;
+  var Cache, CacheReference, CachedObject, CachedObjectFactory, DomCache, EventEmitter, EventEmitterProxy, JsonPointer, MemoryCache, Promise, pathToPointer, ref;
+  ref = arg != null ? arg : {}, JsonPointer = ref.JsonPointer, EventEmitter = ref.EventEmitter, Promise = ref.Promise;
   if (typeof require === 'function') {
     if (JsonPointer == null) {
       JsonPointer = require('json-ptr');
+    }
+    if (Promise == null) {
+      Promise = require('bluebird');
     }
     if (EventEmitter == null) {
       EventEmitter = require('events').EventEmitter;
@@ -343,6 +346,26 @@ configure = function(arg) {
       if (this.listenerCount('value') === 0) {
         return this.removeFirebaseValueListener();
       }
+    };
+
+    CachedObject.prototype.$watch = function(callback) {
+      return this.watch(callback);
+    };
+
+    CachedObject.prototype.$loaded = function() {
+      var promiseFn;
+      promiseFn = (function(_this) {
+        return function(resolve, reject) {
+          return _this.load(function(error, data) {
+            if (error != null) {
+              return reject(error);
+            } else {
+              return resolve(data);
+            }
+          });
+        };
+      })(this);
+      return new Promise(promiseFn);
     };
 
     CachedObject.prototype.load = function(callback) {

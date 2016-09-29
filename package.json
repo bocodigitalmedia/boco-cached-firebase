@@ -1,6 +1,6 @@
 {
   "name": "boco-cached-firebase",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Cached firebase for fully offline access.",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,7 @@
   "author": "Christian Bradley <christian.bradley@bocodigital.com> (https://github.com/christianbradley)",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.4.6",
     "json-ptr": "^1.0.1"
   },
   "devDependencies": {
