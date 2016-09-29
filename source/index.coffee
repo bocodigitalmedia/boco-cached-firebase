@@ -173,10 +173,7 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
       @off 'value', callback
       @removeFirebaseValueListener() if @listenerCount('value') is 0
 
-    $watch: (callback) ->
-      @watch callback
-
-    $loaded: ->
+    getLoadedPromise: ->
 
       promiseFn = (resolve, reject) =>
         noop = -> # noop
@@ -225,6 +222,39 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
       timeoutId = setTimeout loadFromCache, @loadFromFirebaseTimeout
       loadFromFirebase()
 
+  class FirebaseObjectDropIn
+    $cachedObject: null
+
+    constructor: ({$cachedObject}) ->
+      @$cachedObject = $cachedObject
+
+      @$watchObserver = (data) =>
+        @[key] = val for own key, val of data
+
+      @$cachedObject.watch @$watchObserver
+
+    $on: (args...) ->
+      @$cachedObject.on args...
+
+    $once: (args...) ->
+      @$cachedObject.once args...
+
+    $removeListener: (args...) ->
+      @$cachedObject.removeListener args...
+
+    $watch: (args...) ->
+      @$cachedObject.watch args...
+
+    $unwatch: (args...) ->
+      @$cachedObject.unwatch args...
+
+    $loaded: ->
+      @$cachedObject.getLoadedPromise()
+
+    $destroy: ->
+      @$cachedObject.unwatch @$watchObserver
+      @$cachedObject = null
+
   class CachedObjectFactory
     firebaseDb: null
     cache: null
@@ -236,6 +266,10 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
       firebaseRef = @firebaseDb.ref path
       cacheRef = @cache.ref path
       new CachedObject {firebaseRef, cacheRef}
+
+    createFirebaseObjectDropIn: (path) ->
+      $cachedObject = @create path
+      new FirebaseObjectDropIn {$cachedObject}
 
   {
     configure
