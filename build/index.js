@@ -5,7 +5,7 @@ var configure,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 configure = function(arg) {
-  var Cache, CacheReference, CachedObject, CachedObjectFactory, DomCache, EventEmitter, EventEmitterProxy, JsonPointer, MemoryCache, Promise, pathToPointer, ref;
+  var Cache, CacheReference, CachedObject, CachedObjectFactory, DomCache, EventEmitter, EventEmitterProxy, FirebaseObjectDropIn, JsonPointer, MemoryCache, Promise, pathToPointer, ref;
   ref = arg != null ? arg : {}, JsonPointer = ref.JsonPointer, EventEmitter = ref.EventEmitter, Promise = ref.Promise;
   if (typeof require === 'function') {
     if (JsonPointer == null) {
@@ -348,11 +348,7 @@ configure = function(arg) {
       }
     };
 
-    CachedObject.prototype.$watch = function(callback) {
-      return this.watch(callback);
-    };
-
-    CachedObject.prototype.$loaded = function() {
+    CachedObject.prototype.getLoadedPromise = function() {
       var promiseFn;
       promiseFn = (function(_this) {
         return function(resolve, reject) {
@@ -425,6 +421,70 @@ configure = function(arg) {
     return CachedObject;
 
   })(EventEmitterProxy);
+  FirebaseObjectDropIn = (function() {
+    FirebaseObjectDropIn.prototype.$cachedObject = null;
+
+    function FirebaseObjectDropIn(arg1) {
+      var $cachedObject;
+      $cachedObject = arg1.$cachedObject;
+      this.$cachedObject = $cachedObject;
+      this.$watchObserver = (function(_this) {
+        return function(data) {
+          var key, results, val;
+          results = [];
+          for (key in data) {
+            if (!hasProp.call(data, key)) continue;
+            val = data[key];
+            results.push(_this[key] = val);
+          }
+          return results;
+        };
+      })(this);
+      this.$cachedObject.watch(this.$watchObserver);
+    }
+
+    FirebaseObjectDropIn.prototype.$on = function() {
+      var args, ref1;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      return (ref1 = this.$cachedObject).on.apply(ref1, args);
+    };
+
+    FirebaseObjectDropIn.prototype.$once = function() {
+      var args, ref1;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      return (ref1 = this.$cachedObject).once.apply(ref1, args);
+    };
+
+    FirebaseObjectDropIn.prototype.$removeListener = function() {
+      var args, ref1;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      return (ref1 = this.$cachedObject).removeListener.apply(ref1, args);
+    };
+
+    FirebaseObjectDropIn.prototype.$watch = function() {
+      var args, ref1;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      return (ref1 = this.$cachedObject).watch.apply(ref1, args);
+    };
+
+    FirebaseObjectDropIn.prototype.$unwatch = function() {
+      var args, ref1;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      return (ref1 = this.$cachedObject).unwatch.apply(ref1, args);
+    };
+
+    FirebaseObjectDropIn.prototype.$loaded = function() {
+      return this.$cachedObject.getLoadedPromise();
+    };
+
+    FirebaseObjectDropIn.prototype.$destroy = function() {
+      this.$cachedObject.unwatch(this.$watchObserver);
+      return this.$cachedObject = null;
+    };
+
+    return FirebaseObjectDropIn;
+
+  })();
   CachedObjectFactory = (function() {
     CachedObjectFactory.prototype.firebaseDb = null;
 
@@ -446,6 +506,14 @@ configure = function(arg) {
       return new CachedObject({
         firebaseRef: firebaseRef,
         cacheRef: cacheRef
+      });
+    };
+
+    CachedObjectFactory.prototype.createFirebaseObjectDropIn = function(path) {
+      var $cachedObject;
+      $cachedObject = this.create(path);
+      return new FirebaseObjectDropIn({
+        $cachedObject: $cachedObject
       });
     };
 
