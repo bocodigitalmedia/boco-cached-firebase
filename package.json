@@ -1,6 +1,6 @@
 {
   "name": "boco-cached-firebase",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Cached firebase for fully offline access.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.6",
-    "json-ptr": "^1.0.1"
+    "json-ptr": "https://github.com/frankrue/json-ptr.git#v1.0.2"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",
