@@ -176,15 +176,15 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
     getLoadedPromise: ->
 
       promiseFn = (resolve, reject) =>
-        noop = -> # noop
+        # noop = -> # noop
 
         onError = (error) ->
-          resolve = noop
+          # resolve = noop
           reject error
 
         onData = (data) =>
           @removeListener 'error', onError
-          reject = noop
+          # reject = noop
           resolve data
 
         @once 'error', onError
