@@ -177,15 +177,15 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
     getLoadedPromise: ->
 
       promiseFn = (resolve, reject) =>
-        # noop = -> # noop
+        noop = -> # noop
 
         onError = (error) ->
-          # resolve = noop
+          resolve = noop
           reject error
 
         onData = (data) =>
           @removeListener 'error', onError
-          # reject = noop
+          reject = noop
           resolve data
 
         @once 'error', onError
@@ -259,6 +259,7 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
   class CachedObjectFactory
     firebaseDb: null
     cache: null
+    defaultProperties: null
 
     constructor: (props) ->
       @[key] = val for own key, val of props
@@ -266,7 +267,12 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
     create: (path) ->
       firebaseRef = @firebaseDb.ref path
       cacheRef = @cache.ref path
-      new CachedObject {firebaseRef, cacheRef}
+
+      props = {}
+      props[key] = val for own key, val of @defaultProperties
+      props[key] = val for own key, val of { firebaseRef, cacheRef }
+
+      new CachedObject props
 
     createFirebaseObjectDropIn: (path) ->
       $cachedObject = @create path

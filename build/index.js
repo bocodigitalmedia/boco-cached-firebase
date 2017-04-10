@@ -358,12 +358,15 @@ configure = function(arg) {
       var promiseFn;
       promiseFn = (function(_this) {
         return function(resolve, reject) {
-          var onData, onError;
+          var noop, onData, onError;
+          noop = function() {};
           onError = function(error) {
+            resolve = noop;
             return reject(error);
           };
           onData = function(data) {
             _this.removeListener('error', onError);
+            reject = noop;
             return resolve(data);
           };
           _this.once('error', onError);
@@ -493,6 +496,8 @@ configure = function(arg) {
 
     CachedObjectFactory.prototype.cache = null;
 
+    CachedObjectFactory.prototype.defaultProperties = null;
+
     function CachedObjectFactory(props) {
       var key, val;
       for (key in props) {
@@ -503,13 +508,26 @@ configure = function(arg) {
     }
 
     CachedObjectFactory.prototype.create = function(path) {
-      var cacheRef, firebaseRef;
+      var cacheRef, firebaseRef, key, props, ref1, ref2, val;
       firebaseRef = this.firebaseDb.ref(path);
       cacheRef = this.cache.ref(path);
-      return new CachedObject({
+      props = {};
+      ref1 = this.defaultProperties;
+      for (key in ref1) {
+        if (!hasProp.call(ref1, key)) continue;
+        val = ref1[key];
+        props[key] = val;
+      }
+      ref2 = {
         firebaseRef: firebaseRef,
         cacheRef: cacheRef
-      });
+      };
+      for (key in ref2) {
+        if (!hasProp.call(ref2, key)) continue;
+        val = ref2[key];
+        props[key] = val;
+      }
+      return new CachedObject(props);
     };
 
     CachedObjectFactory.prototype.createFirebaseObjectDropIn = function(path) {
