@@ -167,7 +167,7 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
       callback
 
     removeFirebaseValueListener: ->
-      @firebase.off 'value', @firebaseValueListener
+      @firebaseRef.off 'value', @firebaseValueListener
       @firebaseValueListener = null
 
     unwatch: (callback) ->

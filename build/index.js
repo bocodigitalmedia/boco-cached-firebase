@@ -343,7 +343,7 @@ configure = function(arg) {
     };
 
     CachedObject.prototype.removeFirebaseValueListener = function() {
-      this.firebase.off('value', this.firebaseValueListener);
+      this.firebaseRef.off('value', this.firebaseValueListener);
       return this.firebaseValueListener = null;
     };
 
