@@ -40,7 +40,7 @@ configure = function(arg) {
     EventEmitterProxy.prototype.off = function() {
       var args, ref1;
       args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-      return (ref1 = this.emitter).off.apply(ref1, args);
+      return (ref1 = this.emitter).removeListener.apply(ref1, args);
     };
 
     EventEmitterProxy.prototype.once = function() {
