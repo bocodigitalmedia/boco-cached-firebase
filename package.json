@@ -1,6 +1,6 @@
 {
   "name": "boco-cached-firebase",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Cached firebase for fully offline access.",
   "main": "index.js",
   "scripts": {

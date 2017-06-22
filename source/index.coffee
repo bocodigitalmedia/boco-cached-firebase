@@ -10,6 +10,21 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
     parts = path.split(/\/+/).filter(isPresent)
     JsonPointer.encodePointer parts
 
+  ensurePointerSettable = (data, pointer) ->
+    pathKeys = JsonPointer.decodePointer pointer
+    parentPathKeys = pathKeys.slice 0, pathKeys.length - 1
+    parentPointers = parentPathKeys.map (key, i) ->
+      JsonPointer.encodePointer parentPathKeys.slice(0, i + 1)
+
+    parentPointers.forEach (parentPointer) ->
+      parentValue = JsonPointer.get data, parentPointer
+      unless parentValue?
+        JsonPointer.set data, parentPointer, {}, true
+
+  pointerSet = (data, pointer, value, force) ->
+    ensurePointerSettable data, pointer
+    JsonPointer.set data, pointer, value, force
+
   class EventEmitterProxy
     emitter: null
     on: (args...) -> @emitter.on args...
@@ -58,7 +73,7 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
       data = @getData()
       pointer = @pathToPointer path
 
-      JsonPointer.set data, pointer, value, true
+      pointerSet data, pointer, value, true
 
       @setData data
       done null
@@ -85,7 +100,7 @@ configure = ({JsonPointer, EventEmitter, Promise} = {}) ->
 
       try
         pointer = @pathToPointer path
-        JsonPointer.set @data, pointer, value, true
+        pointerSet @data, pointer, value, true
       catch e
         error = e
       finally
