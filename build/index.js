@@ -5,7 +5,7 @@ var configure,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 configure = function(arg) {
-  var Cache, CacheReference, CachedObject, CachedObjectFactory, DomCache, EventEmitter, EventEmitterProxy, FirebaseObjectDropIn, JsonPointer, MemoryCache, Promise, pathToPointer, ref;
+  var Cache, CacheReference, CachedObject, CachedObjectFactory, DomCache, EventEmitter, EventEmitterProxy, FirebaseObjectDropIn, JsonPointer, MemoryCache, Promise, ensurePointerSettable, pathToPointer, pointerSet, ref;
   ref = arg != null ? arg : {}, JsonPointer = ref.JsonPointer, EventEmitter = ref.EventEmitter, Promise = ref.Promise;
   if (typeof require === 'function') {
     if (JsonPointer == null) {
@@ -25,6 +25,25 @@ configure = function(arg) {
     };
     parts = path.split(/\/+/).filter(isPresent);
     return JsonPointer.encodePointer(parts);
+  };
+  ensurePointerSettable = function(data, pointer) {
+    var parentPathKeys, parentPointers, pathKeys;
+    pathKeys = JsonPointer.decodePointer(pointer);
+    parentPathKeys = pathKeys.slice(0, pathKeys.length - 1);
+    parentPointers = parentPathKeys.map(function(key, i) {
+      return JsonPointer.encodePointer(parentPathKeys.slice(0, i + 1));
+    });
+    return parentPointers.forEach(function(parentPointer) {
+      var parentValue;
+      parentValue = JsonPointer.get(data, parentPointer);
+      if (parentValue == null) {
+        return JsonPointer.set(data, parentPointer, {}, true);
+      }
+    });
+  };
+  pointerSet = function(data, pointer, value, force) {
+    ensurePointerSettable(data, pointer);
+    return JsonPointer.set(data, pointer, value, force);
   };
   EventEmitterProxy = (function() {
     function EventEmitterProxy() {}
@@ -151,7 +170,7 @@ configure = function(arg) {
       var data, pointer;
       data = this.getData();
       pointer = this.pathToPointer(path);
-      JsonPointer.set(data, pointer, value, true);
+      pointerSet(data, pointer, value, true);
       this.setData(data);
       return done(null);
     };
@@ -198,7 +217,7 @@ configure = function(arg) {
       error = null;
       try {
         pointer = this.pathToPointer(path);
-        return JsonPointer.set(this.data, pointer, value, true);
+        return pointerSet(this.data, pointer, value, true);
       } catch (error1) {
         e = error1;
         return error = e;
